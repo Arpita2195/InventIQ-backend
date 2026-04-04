@@ -30,6 +30,8 @@ app.use("/api/suppliers", require("./routes/supplier.routes"));
 app.use("/api/notifications", require("./routes/notification.routes"));
 app.use("/api/khata", require("./routes/khata.routes"));
 
+console.log("Routes loaded successfully");
+
 app.get("/api/health", (req, res) =>
   res.json({
     status: "InventIQ server running",
