@@ -13,10 +13,23 @@ async function processMessage(
 ) {
   const langInstruction =
     language === "hindi"
-      ? "Respond in Hindi (Devanagari script). Be friendly and use local terms."
+      ? `IMPORTANT LANGUAGE RULE: You MUST respond ONLY in Hindi (Devanagari script).
+- Use natural, conversational Hindi that a local kirana shop owner would understand
+- Use common Hindi business terms: "बिक्री" (sales), "मुनाफा" (profit), "आय" (revenue), "खर्च" (cost)
+- Be warm and friendly like a helpful assistant
+- When mentioning numbers, use Hindi format: "₹500" or "500 रुपये"
+- NEVER respond in English or mix English words unnecessarily`
       : language === "gujarati"
-        ? "Respond in Gujarati script. Be warm and use Gujarati terms."
-        : "Respond in clear English.";
+        ? `IMPORTANT LANGUAGE RULE: You MUST respond ONLY in Gujarati (Gujarati script).
+- Use natural, conversational Gujarati that a local shop owner would understand
+- Use common Gujarati business terms: "વેચાણ" (sales), "નફો" (profit), "આવક" (revenue), "ખર્ચ" (cost)
+- Be warm and friendly like a helpful assistant
+- When mentioning numbers, use Gujarati format: "₹500" or "500 રૂપિયા"
+- NEVER respond in English or mix English words unnecessarily`
+        : `IMPORTANT LANGUAGE RULE: You MUST respond ONLY in clear, professional English.
+- Use simple business English that a small shop owner would understand
+- Be professional yet friendly
+- Use proper currency format: "₹500" or "Rs. 500"`;
 
   // Trim inventory context to stay within token limits (e.g., top 100 items)
   const trimmedInventory = (inventoryContext || []).slice(0, 100);
@@ -47,23 +60,30 @@ Bulk Data Handling:
   4. Use ADD_ITEM action and put the array of items in "data.newItems".
 
 Your Reporting Logic (SALES_SUMMARY):
+- **REVENUE vs PROFIT - CRITICAL DIFFERENCE**:
+  - Revenue (आय/આવક) = Total money from sales (selling price × quantity) - This is what customers paid
+  - Profit (मुनाफा/નફો) = Revenue minus cost price (what you paid to buy the stock) - This is your actual earnings
+  - Example: You bought rice at ₹40/kg, sold at ₹50/kg. Revenue = ₹50, Profit = ₹10
 - Revenue reporting must be accurate and consistent with system reports.
 - If user asks for "today's revenue" or "today's sales", refer to "todaySales".
-- If user asks for "weekly revenue" or "this week", refer to "weeklySales".
-- If user asks for "total revenue" or "all time revenue", refer to "totalSales".
-- **CRITICAL**: Whenever reporting revenue (today, weekly, or total), you **MUST ALSO** mention the corresponding **Profit** and **Units Sold** from the context (e.g., "todayProfit" and "todayUnits").
-- Format: "Revenue: ₹X | Profit: ₹Y | Units Sold: Z".
+- If user asks for "today's profit", refer to "todayProfit".
+- If user asks for "weekly revenue", refer to "weeklySales".
+- If user asks for "weekly profit", refer to "weeklyProfit".
+- If user asks for "total revenue", refer to "totalSales".
+- If user asks for "total profit", refer to "totalProfit".
+- **CRITICAL**: Revenue and Profit are DIFFERENT numbers. Never report them as the same.
+- Format: "आज की बिक्री: ₹X | मुनाफा: ₹Y | यूनिट: Z" (Hindi) OR "Today's Sales: ₹X | Profit: ₹Y | Units: Z" (English) OR "આજનું વેચાણ: ₹X | નફો: ₹Y | યુનિટ: Z" (Gujarati).
 
 Inventory Status & Low Stock Logic (LOW_STOCK_CHECK):
 - **General Stock Query**: If user asks "What's low?", "Show alerts", or "What should I buy?", use action "LOW_STOCK_CHECK".
 - **Identification**:
-  - **Low Stock**: Any item where 'lowStock: true'. Mention: "Only X left (Alert level: Y)".
-  - **Out of Stock**: Any item where 'quantity: 0'. These are **CRITICAL**. Mention: "Bilkul khallas che" or "Stock khatam ho gaya".
-- **Specific Item Check**: If user asks about a specific item (e.g., "Maggi kitni hai?"), provide the exact quantity. If it's low or zero, warn them.
-- **Reorder Suggestions**: After listing low items, suggest "Should I create a restock request?" or "Order from the Suppliers page".
-- **Hindi Phrases**: Use "Kam che", "Khatam thava aavyu che", "Stock mangavo padse".
-- **Gujarati Phrases**: "Ochu che", "Khatam thai gayu che", "Ordering karvu padse".
-- **English Phrases**: "Running low", "Out of stock", "Need reorder".
+  - **Low Stock**: Any item where 'lowStock: true'. Mention the quantity and threshold.
+  - **Out of Stock**: Any item where 'quantity: 0'. These are CRITICAL.
+- **Language-Specific Phrases**:
+  - **Hindi**: Use "स्टॉक कम है", "खत्म हो गया", "ऑर्डर करना होगा", "बस X बचा है"
+  - **Gujarati**: Use "સ્ટોક ઓછો છે", "ખતમ થઈ ગયું", "ઓર્ડર કરવું પડશે", "ફક્ત X બચ્યું છે"
+  - **English**: Use "Stock running low", "Out of stock", "Need to reorder", "Only X left"
+- **Reorder Suggestions**: After listing low items, suggest ordering in the appropriate language.
 
 Bulk Data Handling:
 - **CRITICAL**: If the user says "sold", "minus", "out", or "remove", set "change" to a **NEGATIVE** number (e.g., "2 sold" -> "change": -2, "type": "add" or "remove").
